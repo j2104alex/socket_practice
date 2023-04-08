@@ -33,8 +33,8 @@ const usuariosConectados = [];
  * y es un callback que se ejecuta cuando se produce el evento connection */
 io.on('connection', (socket) => {
     console.log('Un cliente se ha conectado');
-    console.log(socket);
-    
+    /* console.log(socket); */
+
     // Escuchar el evento 'usuario-conectado' cuando un cliente se une al chat
     socket.on('usuario-conectado', (nombreUsuario) => {
         console.log(`El usuario ${nombreUsuario} se ha conectado`);
@@ -70,17 +70,19 @@ io.on('connection', (socket) => {
 
     // Escuchar el evento 'nuevo-mensaje' cuando un cliente envía un mensaje
     socket.on('nuevo-mensaje', (mensaje) => {
-        // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
-        const usuario = usuariosConectados.find(u => u.id === socket.id);
-        /**Crea objeto mensajeChat que contiene el nombre del usuario que
-         * envio el mensaje y el mensaje en si recibido por parametro
-         */
-        const mensajeChat = {
-            usuario: usuario.nombre,
-            mensaje: mensaje
-        };
-        // Emitir el evento 'mensaje' a todos los clientes conectados
-        io.emit('mensaje', mensajeChat);
+        if (mensaje) {
+            const usuario = usuariosConectados.find(u => u.id === socket.id);
+            /**Crea objeto mensajeChat que contiene el nombre del usuario que
+             * envio el mensaje y el mensaje en si recibido por parametro
+             */
+            const mensajeChat = {
+                usuario: usuario.nombre,
+                mensaje: mensaje
+            };
+            // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
+            // Emitir el evento 'mensaje' a todos los clientes conectados
+            io.emit('mensaje', mensajeChat);
+        }
     });
 
     // Escuchar el evento 'disconnect' cuando un cliente se desconecta
@@ -97,21 +99,23 @@ io.on('connection', (socket) => {
          *El primer argumento del método splice indica la posición del elemento a eliminar en el arreglo. 
          *El segundo argumento indica el número de elementos que se van a eliminar a partir de esa posición. 
          *En este caso, se va a eliminar solo un elemento, que es el usuario que se ha desconectado. */
-        usuariosConectados.splice(usuariosConectados.indexOf(usuarioDesconectado), 1);
+        if (usuarioDesconectado) {
+            usuariosConectados.splice(usuariosConectados.indexOf(usuarioDesconectado), 1);
 
-        // Emitir el evento 'usuarios-conectados' a todos los clientes conectados
-        io.emit('usuarios-conectados', usuariosConectados);
+            // Emitir el evento 'usuarios-conectados' a todos los clientes conectados
+            io.emit('usuarios-conectados', usuariosConectados);
 
-        // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
-        const mensajeSistema = {
-            usuario: 'Sistema',
-            mensaje: `${usuarioDesconectado.nombre} se ha desconectado`
-        };
-        io.emit('mensaje-sistema', mensajeSistema);
+            // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
+            const mensajeSistema = {
+                usuario: 'Sistema',
+                mensaje: `${usuarioDesconectado.nombre} se ha desconectado`
+            };
+            io.emit('mensaje-sistema', mensajeSistema);
+        }
     });
 });
 
 // Iniciar el servidor HTTP
-http.listen(3000, () => {
+server.listen(3000, () => {
     console.log('Servidor iniciado en el puerto 3000');
 });
