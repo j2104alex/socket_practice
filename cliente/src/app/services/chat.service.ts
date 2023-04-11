@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { SocketService } from './socket.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class ChatService {
   conectadosService = new BehaviorSubject<any[]>([]);
   MensajeService = new BehaviorSubject<any[]>([])
 
-  constructor(private socket: SocketService) {
+  constructor(private socket: SocketService, private toastr:ToastrService) {
     this.socket.io.on('mensaje', (mensajeChat: any) => {
       //todo lo que ya tenia en el arreglo mas este nuevo contenido
       this.MensajeService.next([...this.MensajeService.getValue(), mensajeChat]);
@@ -21,7 +22,8 @@ export class ChatService {
     });
 
     this.socket.io.on('mensaje-sistema', (mensajeSistema: any) => {
-      console.log(mensajeSistema);
+      this.toastr.success(mensajeSistema.usuario,mensajeSistema.mensaje);
+     
     })
   }
 public verUsuarios(){

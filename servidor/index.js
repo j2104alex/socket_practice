@@ -33,10 +33,9 @@ const usuariosConectados = [];
  * y es un callback que se ejecuta cuando se produce el evento connection */
 io.on('connection', (socket) => {
     console.log('Un cliente se ha conectado');
-    /* console.log(socket); */
 
     socket.on('verUsuarios', () => {
-        io.emit('usuarios-conectados', usuariosConectados);
+        socket.emit('usuarios-conectados', usuariosConectados);
     })
     // Escuchar el evento 'usuario-conectado' cuando un cliente se une al chat
     socket.on('usuario-conectado', (nombreUsuario) => {
@@ -61,14 +60,14 @@ io.on('connection', (socket) => {
          * para el evento usuarios-conectados recibirá la lista actualizada de usuarios 
          * conectados y podrá utilizarla para mostrarla en su interfaz de usuario
         */
-        io.emit('usuarios-conectados', usuariosConectados);
+        socket.emit('usuarios-conectados', usuariosConectados);
 
         // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
         const mensajeSistema = {
             usuario: 'Sistema',
             mensaje: `${nombreUsuario} se ha unido al chat`
         };
-        io.emit('mensaje-sistema', mensajeSistema);
+        socket.broadcast.emit('mensaje-sistema', mensajeSistema);
     });
 
     // Escuchar el evento 'nuevo-mensaje' cuando un cliente envía un mensaje
@@ -85,7 +84,7 @@ io.on('connection', (socket) => {
                 }
                 // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
                 // Emitir el evento 'mensaje' a todos los clientes conectados
-                io.emit('mensaje', mensajeChat);
+                socket.emit('mensaje', mensajeChat);
             };
         };
     });
@@ -108,14 +107,14 @@ io.on('connection', (socket) => {
             usuariosConectados.splice(usuariosConectados.indexOf(usuarioDesconectado), 1);
 
             // Emitir el evento 'usuarios-conectados' a todos los clientes conectados
-            io.emit('usuarios-conectados', usuariosConectados);
+            socket.emit('usuarios-conectados', usuariosConectados);
 
             // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
             const mensajeSistema = {
                 usuario: 'Sistema',
                 mensaje: `${usuarioDesconectado.nombre} se ha desconectado`
             };
-            io.emit('mensaje-sistema', mensajeSistema);
+            socket.emit('mensaje-sistema', mensajeSistema);
         }
     });
 });
