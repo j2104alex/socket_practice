@@ -35,6 +35,9 @@ io.on('connection', (socket) => {
     console.log('Un cliente se ha conectado');
     /* console.log(socket); */
 
+    socket.on('verUsuarios', () => {
+        io.emit('usuarios-conectados', usuariosConectados);
+    })
     // Escuchar el evento 'usuario-conectado' cuando un cliente se une al chat
     socket.on('usuario-conectado', (nombreUsuario) => {
         console.log(`El usuario ${nombreUsuario} se ha conectado`);
@@ -75,14 +78,16 @@ io.on('connection', (socket) => {
             /**Crea objeto mensajeChat que contiene el nombre del usuario que
              * envio el mensaje y el mensaje en si recibido por parametro
              */
-            const mensajeChat = {
-                usuario: usuario.nombre,
-                mensaje: mensaje
+            if (usuario) {
+                const mensajeChat = {
+                    usuario: usuario.nombre,
+                    mensaje: mensaje
+                }
+                // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
+                // Emitir el evento 'mensaje' a todos los clientes conectados
+                io.emit('mensaje', mensajeChat);
             };
-            // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
-            // Emitir el evento 'mensaje' a todos los clientes conectados
-            io.emit('mensaje', mensajeChat);
-        }
+        };
     });
 
     // Escuchar el evento 'disconnect' cuando un cliente se desconecta

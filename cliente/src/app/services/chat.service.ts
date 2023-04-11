@@ -24,6 +24,9 @@ export class ChatService {
       console.log(mensajeSistema);
     })
   }
+public verUsuarios(){
+  this.socket.io.emit('verUsuarios')
+}
 
   public userConnection(nombreUsuario: String) {
     this.socket.io.emit('usuario-conectado', nombreUsuario)
