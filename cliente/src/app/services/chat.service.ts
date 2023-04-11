@@ -14,6 +14,7 @@ export class ChatService {
   constructor(private socket: SocketService, private toastr:ToastrService) {
     this.socket.io.on('mensaje', (mensajeChat: any) => {
       //todo lo que ya tenia en el arreglo mas este nuevo contenido
+      //next funciona como un push
       this.MensajeService.next([...this.MensajeService.getValue(), mensajeChat]);
     });
 

@@ -20,6 +20,7 @@ export class ChatComponent {
     })
 
     this.chat.MensajeService.subscribe(MensajeService => {
+      console.log(MensajeService)
       this.mensajes = MensajeService;
     })
   }

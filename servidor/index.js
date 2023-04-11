@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
          * para el evento usuarios-conectados recibirá la lista actualizada de usuarios 
          * conectados y podrá utilizarla para mostrarla en su interfaz de usuario
         */
-        socket.emit('usuarios-conectados', usuariosConectados);
+        io.emit('usuarios-conectados', usuariosConectados);
 
         // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
         const mensajeSistema = {
@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
                 }
                 // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
                 // Emitir el evento 'mensaje' a todos los clientes conectados
-                socket.emit('mensaje', mensajeChat);
+                io.emit('mensaje', mensajeChat);
             };
         };
     });
@@ -107,14 +107,14 @@ io.on('connection', (socket) => {
             usuariosConectados.splice(usuariosConectados.indexOf(usuarioDesconectado), 1);
 
             // Emitir el evento 'usuarios-conectados' a todos los clientes conectados
-            socket.emit('usuarios-conectados', usuariosConectados);
+            io.emit('usuarios-conectados', usuariosConectados);
 
             // Emitir el evento 'mensaje-sistema' a todos los clientes conectados
             const mensajeSistema = {
                 usuario: 'Sistema',
                 mensaje: `${usuarioDesconectado.nombre} se ha desconectado`
             };
-            socket.emit('mensaje-sistema', mensajeSistema);
+            io.emit('mensaje-sistema', mensajeSistema);
         }
     });
 });
