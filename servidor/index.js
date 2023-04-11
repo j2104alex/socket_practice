@@ -1,6 +1,9 @@
 const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
+//Importar modelo
+const Message = require('./model.js');
+const conectDb = require('./mongodb.js');
 
 //Guarda en la variable app la funcion de express
 const app = express();
@@ -38,7 +41,7 @@ io.on('connection', (socket) => {
         socket.emit('usuarios-conectados', usuariosConectados);
     })
     // Escuchar el evento 'usuario-conectado' cuando un cliente se une al chat
-    socket.on('usuario-conectado', (nombreUsuario) => {
+    socket.on('usuario-conectado', async (nombreUsuario) => {
         console.log(`El usuario ${nombreUsuario} se ha conectado`);
 
         // Agregar el usuario a la lista de usuarios conectados
@@ -68,10 +71,19 @@ io.on('connection', (socket) => {
             mensaje: `${nombreUsuario} se ha unido al chat`
         };
         socket.broadcast.emit('mensaje-sistema', mensajeSistema);
+        
+        const listaMensajes = await Message.find();
+        for (let i = 0; i< listaMensajes.length; i++){
+            const mensajeChat = {
+                usuario: listaMensajes[i].usuario,
+                mensaje: listaMensajes[i].mensaje
+            };
+            socket.emit('mensaje',mensajeChat);
+        }
     });
 
     // Escuchar el evento 'nuevo-mensaje' cuando un cliente envía un mensaje
-    socket.on('nuevo-mensaje', (mensaje) => {
+    socket.on('nuevo-mensaje', async  (mensaje) => {
         if (mensaje) {
             const usuario = usuariosConectados.find(u => u.id === socket.id);
             /**Crea objeto mensajeChat que contiene el nombre del usuario que
@@ -81,7 +93,11 @@ io.on('connection', (socket) => {
                 const mensajeChat = {
                     usuario: usuario.nombre,
                     mensaje: mensaje
-                }
+                };
+                
+                const chat = new Message(mensajeChat);
+                await chat.save();
+
                 // Encontrar el usuario que envió el mensaje a traves del ID del socket que lo emitió
                 // Emitir el evento 'mensaje' a todos los clientes conectados
                 socket.emit('mensaje', mensajeChat);
@@ -119,7 +135,14 @@ io.on('connection', (socket) => {
     });
 });
 
-// Iniciar el servidor HTTP
-server.listen(3000, () => {
-    console.log('Servidor iniciado en el puerto 3000');
-});
+const PORT = process.env.PORT || 3000;
+conectDb()
+  .then(async () => {
+    server.listen(PORT, () => {
+      console.log(`Servidor escuchando en puerto ${PORT}`)
+    });
+  })
+  .catch((error) => {
+    console.error("Error al conectar a la base de datos", error);
+    process.exit(1);
+  });
